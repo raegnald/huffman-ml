@@ -1,7 +1,7 @@
 
 # Huffman (de)compression implemented in OCaml in a single file
 
-You are very much advised to
+You are very much advised to read the
 [Wikipedia](https://en.wikipedia.org/wiki/Huffman_coding) article
 about Huffman coding.
 
