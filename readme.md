@@ -1,11 +1,13 @@
 
 # Huffman (de)compression implemented in OCaml in a single file
 
-You are very much advised to read the
+You are strongly advised to read the
 [Wikipedia](https://en.wikipedia.org/wiki/Huffman_coding) article
-about Huffman coding.
+about Huffman coding. A single file (`huffman.ml`) is the focus of
+this project, it is a command line tool for compressing and
+decompressing files.
 
-## Instalation and usage
+## Installation and usage
 
 This program can only be compiled on UNIX-like systems, although you
 are free to modify it to run on other, possibly non-free, operating
@@ -16,7 +18,8 @@ systems. The dependencies are:
 - `unix` (is a dependency of the OCaml compiler, as far as I know),
 - optionally `dot`, one of [Graphviz](https://graphviz.org/)'s
   renderers, to see the Huffman tree as an SVG (see
-  <examples/romeo-and-juliet.txt.svg> for an example).
+  [examples/romeo-and-juliet.txt.svg](examples/romeo-and-juliet.txt.svg)
+  for an example).
 
 If you have never used OPAM or OCaml, start by [downloading
 OPAM](https://opam.ocaml.org/doc/Install.html), then run
@@ -30,8 +33,8 @@ $ opam install dune
 ...
 ```
 
-When you have a functional environment, you can compile and add to
-your path with
+Once you have a working environment, you can compile `huffman.ml` and
+add it your path with
 
 ```sh
 $ dune build --profile=release
@@ -52,7 +55,8 @@ Options:
 
 ## Examples
 
-We are going to compress and decompress . From the root of this project:
+We will compress and decompress *Romeo and Juliet*. From the root of
+this project:
 
 ```sh
 $ cd examples/
