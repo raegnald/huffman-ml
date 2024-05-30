@@ -1,0 +1,8 @@
+(env
+ (dev     (flags (:standard -w -37)))
+ (release (ocamlopt_flags (:standard -O3))))
+
+(executable
+ (public_name huffman)
+ (name huffman)
+ (libraries unix))
