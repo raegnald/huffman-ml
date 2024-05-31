@@ -104,14 +104,17 @@ let rec codewords_of_tree_rev ?(curr_dir=[]) ~table =
                           codewords_of_tree_rev ~curr_dir:(curr_dir@[Right]) ~table t
 
 (** Uses Graphviz notation *)
-let rec print_huff_tree oc ?(curr_dir=[]) =
-  function Leaf (c, _) -> let c = if c = ' ' then "space" else Char.escaped c in
-                          fprintf oc "%S [shape=box,color=blue];\n\"*%s\" -> %S;\n"
-                            c (show_dir curr_dir) c
-         | Node (s, t) -> let d = show_dir curr_dir in
-                          fprintf oc "\"*%s\" -> \"*%s0\";\n\"*%s\" -> \"*%s1\";\n" d d d d;
-                          print_huff_tree oc ~curr_dir:(curr_dir@[Left]) s;
-                          print_huff_tree oc ~curr_dir:(curr_dir@[Right]) t
+let rec print_huff_tree oc ?(curr_dir=[]) ?(dir=None) =
+  let d = show_dir curr_dir in
+  function Leaf (c, _) ->
+            let c = if c = ' ' then "space" else Char.escaped c in
+            fprintf oc "\"*%s*\" [color=green, label=\"%s\"]; %S [shape=box,color=blue];\n\"*%s*\" -> %S;\n"
+              d d c d c
+         | Node (s, t) ->
+            fprintf oc "\"*%s*\" [label=\"%s\"]; \n\"*%s*\" -> \"*%s0*\";\n\"*%s*\" -> \"*%s1*\";\n"
+              d (match dir with Some d -> show_dir [d] | None -> "root") d d d d;
+            print_huff_tree oc ~curr_dir:(curr_dir@[Left]) ~dir:(Some Left) s;
+            print_huff_tree oc ~curr_dir:(curr_dir@[Right]) ~dir:(Some Right) t
 
 (* Compressing *)
 

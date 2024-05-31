@@ -1,10 +1,12 @@
 
+![Romeo and Juliet script as a Huffman tree](examples/romeo-and-juliet.txt.svg)
+
 # Huffman (de)compression implemented in OCaml in a single file
 
 You are strongly advised to read the
 [Wikipedia](https://en.wikipedia.org/wiki/Huffman_coding) article
 about Huffman coding. A single file (`huffman.ml`) is the focus of
-this project, it is a command line tool for compressing and
+this project; it is a command line tool for compressing and
 decompressing files.
 
 ## Installation and usage
