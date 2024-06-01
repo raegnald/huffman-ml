@@ -64,7 +64,7 @@ this project:
 $ cd examples/
 
 $ huffman compress romeo-and-juliet.txt
-Compression ratio: 0.626529. Good.
+Compression ratio: 0.625174. Good.
 
 $ mv romeo-and-juliet.txt romeo-and-juliet.txt.bak
 
