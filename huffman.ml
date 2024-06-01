@@ -251,7 +251,7 @@ let () =
           flush oc;
           close_out oc;
           match ksprintf Unix.system "dot %s -Tsvg > %s && rm %s" dot_file svg_file dot_file
-          with WEXITED 0 -> printf "Wrote graph to file %s and SVG to %s\n" dot_file svg_file
+          with WEXITED 0 -> printf "Wrote SVG to %s\n" svg_file
              | _ -> failwith "Could not convert dot file into an svg. Perhaps you don't have 'dot' installed"
         end
      | "w" | "codewords" ->
