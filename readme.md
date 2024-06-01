@@ -64,7 +64,8 @@ this project:
 $ cd examples/
 
 $ huffman compress romeo-and-juliet.txt
-Compression ratio: 0.625174. Good.
+Compressed file saved to examples/romeo-and-juliet.txt.huff
+Compressed file is 37.482621% smaller than the original.
 
 $ mv romeo-and-juliet.txt romeo-and-juliet.txt.bak
 

@@ -269,17 +269,20 @@ let () =
           let text = In_channel.(with_open_bin file input_all) in
           let freqs = get_frequencies text in
           let huff_tree = make_huff_tree freqs in
+          let compressed_filename = file ^ ".huff" in
           let compressed_data = compress_data huff_tree text in
-          let oc = open_out (file ^ ".huff") in
+          let oc = open_out compressed_filename in
           Marshal.to_channel oc compressed_data [];
           flush oc;
-          let marshaled_len = Out_channel.length oc in
+          let marshaled_len = Int64.to_float (Out_channel.length oc)
+          and original_len = float (String.length text) in
           close_out oc;
 
-          let ratio = (Int64.to_float marshaled_len) /. float (String.length text) in
-          printf "Compression ratio: %f. %s.\n"
-            ratio
-            (if ratio < 1. then "Good" else "Could not compress file efficiently")
+          let saved_percentage = 100. *. (1. -. marshaled_len /. original_len) in
+          printf "Compressed file saved to %s\nCompressed file is %f%% %s than the original.\n"
+            compressed_filename
+            saved_percentage
+            (if saved_percentage > 0. then "smaller" else "larger")
         end
      | "d" | "decompress" ->
         begin
