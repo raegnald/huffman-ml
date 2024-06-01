@@ -18,20 +18,21 @@ open Printf
 type dir = Left | Right    (* Invariant: { Left |-> 0, Right |-> 1} *)
 
 type huffman_tree
-  = Leaf of char * int (* the character and its frequency *)
+  = Leaf of char
   | Node of huffman_tree * huffman_tree
 
 type compressed_data =
-  { tree       : huffman_tree (* TODO: We don't really need to store
-                                 the frequencies in the compressed
-                                 version *)
+  { tree       : huffman_tree
   ; dirs_count : int
   ; data       : Buffer.t }
 
+let frequencies = Array.make 256 0
+
 let rec huff_weight =
-  function Leaf (c, n) -> n * int_of_char c (* I know this isn't
-                                               really a Huffman weight
-                                               per se, but it works *)
+  function Leaf c -> let n = int_of_char c
+                     in frequencies.(n) * n (* This isn't really a
+                                               Huffman weight per se,
+                                               but it works *)
          | Node (s, t) -> huff_weight s + huff_weight t
 
 (* Priority queue for Huffman trees *)
@@ -76,37 +77,39 @@ let show_dir dir =
   List.map show_sense dir |> List.fold_left (^) ""
 
 let get_frequencies text =
+begin
   assert (text != "");
-  let tbl = Hashtbl.create 256 in
-  let add_char c =
-    if Hashtbl.mem tbl c then
-      begin
-        let v = Hashtbl.find tbl c
-        in Hashtbl.replace tbl c (succ v)
-      end
-    else
-      Hashtbl.add tbl c 1
+  let leaves = ref PQueue.empty in
+
+  let count_char c =
+    let n = int_of_char c
+    in frequencies.(n) <- succ frequencies.(n)
+  and add_leaf i count =
+    if count > 0 then
+      leaves := PQueue.add (Leaf (char_of_int i)) !leaves
   in
-  String.iter add_char text;
-  let freqs = List.of_seq @@ Hashtbl.to_seq tbl in
-  List.fold_left (fun acc (c, n) -> PQueue.add (Leaf (c, n)) acc) PQueue.empty freqs
+
+  String.iter count_char text;
+  Array.iteri add_leaf frequencies;
+  !leaves
+end
 
 (** Converts a Huffman tree into a hash table of { char |-> bits } *)
 let rec codewords_of_tree ?(curr_dir=[]) ~table =
-  function Leaf (c, _) -> Hashtbl.add table c curr_dir
+  function Leaf c -> Hashtbl.add table c curr_dir
          | Node (s, t) -> codewords_of_tree ~curr_dir:(curr_dir@[Left]) ~table s;
                           codewords_of_tree ~curr_dir:(curr_dir@[Right]) ~table t
 
 (** Converts a Huffman tree into a hash table of { bits |-> char } *)
 let rec codewords_of_tree_rev ?(curr_dir=[]) ~table =
-  function Leaf (c, _) -> Hashtbl.add table curr_dir c
+  function Leaf c -> Hashtbl.add table curr_dir c
          | Node (s, t) -> codewords_of_tree_rev ~curr_dir:(curr_dir@[Left]) ~table s;
                           codewords_of_tree_rev ~curr_dir:(curr_dir@[Right]) ~table t
 
 (** Uses Graphviz notation *)
 let rec print_huff_tree oc ?(curr_dir=[]) ?(dir=None) =
   let d = show_dir curr_dir in
-  function Leaf (c, _) ->
+  function Leaf c ->
             let c = if c = ' ' then "space" else Char.escaped c in
             fprintf oc "\"*%s*\" [color=green, label=\"%s\"]; %S [shape=box,color=blue];\n\"*%s*\" -> %S;\n"
               d d c d c
