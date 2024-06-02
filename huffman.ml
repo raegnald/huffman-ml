@@ -15,7 +15,7 @@
 
 open Printf
 
-type dir = Left | Right    (* Invariant: { Left |-> 0, Right |-> 1} *)
+type sense = Left | Right    (* Invariant: { Left |-> 0, Right |-> 1} *)
 
 type huffman_tree
   = Leaf of char
@@ -47,12 +47,12 @@ struct
           if s = t then 0 else 1
       end)
 
-  type dir = Least | Greatest
+  type order = Least | Greatest
 
-  (** [take pq dir] returns the [dir]est ([Least] or [Greatest])
+  (** [take pq ord] returns the [ord]est ([Least] or [Greatest])
       element and the queue with that element removed *)
-  let take pq dir =
-    let f = match dir with Least -> min_elt | Greatest -> max_elt in
+  let take pq ord =
+    let f = match ord with Least -> min_elt | Greatest -> max_elt in
     let elt = f pq in
     elt, remove elt pq
 end
@@ -107,7 +107,7 @@ let rec codewords_of_tree_rev ?(curr_dir=[]) ~table =
                           codewords_of_tree_rev ~curr_dir:(curr_dir@[Right]) ~table t
 
 (** Uses Graphviz notation *)
-let rec print_huff_tree oc ?(curr_dir=[]) ?(dir=None) =
+let rec print_huff_tree oc ?(curr_dir=[]) ?(sense=None) =
   let d = show_dir curr_dir in
   function Leaf c ->
             let c = if c = ' ' then "space" else Char.escaped c in
@@ -116,8 +116,8 @@ let rec print_huff_tree oc ?(curr_dir=[]) ?(dir=None) =
          | Node (s, t) ->
             fprintf oc "\"*%s*\" [label=\"%s\"]; \n\"*%s*\" -> \"*%s0*\";\n\"*%s*\" -> \"*%s1*\";\n"
               d (match dir with Some d -> show_dir [d] | None -> "root") d d d d;
-            print_huff_tree oc ~curr_dir:(curr_dir@[Left]) ~dir:(Some Left) s;
-            print_huff_tree oc ~curr_dir:(curr_dir@[Right]) ~dir:(Some Right) t
+            print_huff_tree oc ~curr_dir:(curr_dir@[Left]) ~sense:(Some Left) s;
+            print_huff_tree oc ~curr_dir:(curr_dir@[Right]) ~sense:(Some Right) t
 
 (* Compressing *)
 
@@ -144,8 +144,8 @@ let dirs_to_encoded_chars dirs =
   while !i < Dynarray.length dirs do
     let n = ref 0 in
     for off = 7 downto 0 do
-      let d = match Dynarray.get dirs !i with Left -> 0 | Right -> 1 in
-      n := !n lor (d lsl off);
+      let s = match Dynarray.get dirs !i with Left -> 0 | Right -> 1 in
+      n := !n lor (s lsl off);
       incr i
     done;
     Dynarray.add_last encoded_chars (char_of_int !n)
@@ -184,11 +184,12 @@ let encoded_chars_to_dirs encoded_chars dirs_count =
   for i = 0 to Dynarray.length encoded_chars do
     let b = ref 7 in
     while !b >= 0 && !curr_dir < dirs_count do
-      let dir = if ((int_of_char (Dynarray.get encoded_chars i) lsr !b) land 1) = 0
-                then Left
-                else Right
+      let sense =
+        if ((int_of_char (Dynarray.get encoded_chars i) lsr !b) land 1) = 0
+        then Left
+        else Right
       in
-      Dynarray.append_list dirs [dir];
+      Dynarray.append_list dirs [sense];
       incr curr_dir;
       decr b
     done
